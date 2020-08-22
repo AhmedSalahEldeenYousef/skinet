@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Core.Entities;
+using Core.interfaces;
 using Infrastructure.Data;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,16 +13,18 @@ namespace API.Controllers
     [ApiController]
     public class ProductsController : ControllerBase
     {
-        private readonly StoreContext _context;
-        public ProductsController(StoreContext context)
+
+        private readonly IProductRepository _ropo;
+        public ProductsController(IProductRepository ropo)
         {
-            _context = context;
+            _ropo = ropo;
+
 
         }
         [HttpGet]
         public async Task<ActionResult<List<Product>>> GetAllProducts()
         {
-            var Producs = await _context.Products.ToListAsync();
+            var Producs = await _ropo.GetProductsAsync();
             if (Producs == null)
                 return BadRequest("Not Found");
             else
@@ -32,7 +35,19 @@ namespace API.Controllers
         public async Task<ActionResult<Product>> GetProduct(int id)
         {
 
-            return await _context.Products.FindAsync(id);
+            return await _ropo.GetProductByIdAsync(id);
+        }
+
+        [HttpGet("brands")]
+        public async Task<ActionResult<IReadOnlyList<ProductBrand>>> GetProductBrands()
+        {
+            return Ok(await _ropo.GetProductBrandsAsync());
+        }
+
+        [HttpGet("types")]
+        public async Task<ActionResult<IReadOnlyList<ProductType>>> GetProductTypes()
+        {
+            return Ok(await _ropo.GetProductTypesAsync());
         }
     }
 }
